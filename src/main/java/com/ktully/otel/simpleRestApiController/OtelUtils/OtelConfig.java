@@ -1,4 +1,4 @@
-package com.ktully.otel.simpleRestApiController;
+package com.ktully.otel.simpleRestApiController.OtelUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +39,7 @@ public class OtelConfig {
 		BatchSpanProcessor spanProcessor = BatchSpanProcessor.builder(spanExporter)
 				.setScheduleDelay(100, TimeUnit.MILLISECONDS).build();
 
+		// TODO: Pull these from ENV VARS or appliction.properties
 		AttributeKey<String> myServiceName = AttributeKey.stringKey("service.name");
 		AttributeKey<String> myServiceNamespace = AttributeKey.stringKey("service.namespace");
 		Resource serviceNameResource = Resource.create(Attributes.of(myServiceName,
