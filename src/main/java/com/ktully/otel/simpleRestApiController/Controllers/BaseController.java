@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 //import com.ktully.otel.simpleRestApiController.OtelUtils.OtelConfig;
@@ -41,5 +42,10 @@ public class BaseController {
 		logger.debug("BaseController Derp URL called.");
 		return "derp url called.";
 	}
+	
+	@GetMapping("favicon.ico")
+    @ResponseBody
+    void returnNoFavicon() {
+    }
 
 }

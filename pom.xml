@@ -47,6 +47,7 @@
 			<version>1.2.0</version>
 		</dependency>
 		<!-- OpenTelemetry Metrics - NOT WORKING!!! -->
+		<!-- 
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-api-metrics</artifactId>
@@ -62,6 +63,7 @@
 			<artifactId>opentelemetry-exporter-otlp-metrics</artifactId>
 			<version>1.2.0-alpha</version>
 		</dependency>
+		 -->
 		<!-- Logging Exporter -->
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
@@ -75,11 +77,13 @@
 			<version>1.2.0</version>
 		</dependency>
 		<!-- OpenTelemetry Prometheus Exporter - NOT WORKING!!! -->
+		<!-- 
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-exporters-prometheus</artifactId>
 			<version>0.9.1</version>
 		</dependency>
+		 -->
 		<!-- Prometheus Metrics -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,12 +1,12 @@
 package com.ktully.otel.simpleRestApiController.OtelUtils;
 
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+//import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 // OpenTelemetry
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -20,14 +20,14 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+//import io.opentelemetry.api.metrics.MeterProvider;
+//import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+//import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+//import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 
 // OTLP Exporter
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporters.prometheus.PrometheusCollector;
+//import io.opentelemetry.exporters.prometheus.PrometheusCollector;
 
 @Configuration
 public class OtelConfig {
@@ -82,6 +82,7 @@ public class OtelConfig {
 
 	// The below implementation has been moved into the above method to handle all
 	// of the configs
+	/*
 	@Bean
 	public static MeterProvider OpenTelemetryMetricsConfig() {
 		
@@ -112,5 +113,6 @@ public class OtelConfig {
 		return meterProvider;
 
 	}
+	*/
 
 }
