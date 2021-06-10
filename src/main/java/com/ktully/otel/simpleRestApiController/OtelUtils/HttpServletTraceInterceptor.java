@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -27,8 +28,11 @@ public class HttpServletTraceInterceptor implements HandlerInterceptor {
 
 	// Otel Tracer instantiation
 	// TODO: get Tracer name from ENV VAR or application.properties
+	// TODO: figure out how to use GlobalOpenTelemetry in Spring Boot
+	//public static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
 	public static final OpenTelemetry openTelemetry = OtelConfig.OpenTelemetryConfig();
 	private static String tracerName = "com.ktully.otel.simpleRestApiController.BaseController";
+	//private static final Tracer tracer = GlobalOpenTelemetry.getTracer(tracerName);
 	private static final Tracer tracer = openTelemetry.getTracer(tracerName);
 	Span serverSpan = null;
 
