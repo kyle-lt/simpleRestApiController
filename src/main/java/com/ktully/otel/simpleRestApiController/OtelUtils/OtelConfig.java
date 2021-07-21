@@ -1,12 +1,13 @@
 package com.ktully.otel.simpleRestApiController.OtelUtils;
 
-//import java.util.Collections;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 // OpenTelemetry
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -20,18 +21,26 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-//import io.opentelemetry.api.metrics.MeterProvider;
-//import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-//import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-//import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.api.metrics.MeterProvider;
 
 // OTLP Exporter
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+
+// Prometheus Exporter
 //import io.opentelemetry.exporters.prometheus.PrometheusCollector;
 
 @Configuration
 public class OtelConfig {
-
+	
+	private static final Logger logger = LoggerFactory.getLogger(OtelConfig.class);
+	
+	/*
+	 * OpenTelemetryConfig sets up the trace SDK to be used in the HttpServletTraceInterceptor
+	 */
 	@Bean
 	public static OpenTelemetry OpenTelemetryConfig() {
 		
@@ -42,7 +51,7 @@ public class OtelConfig {
 		Resource serviceNameResource = Resource.create(
 				Attributes.of(myServiceName, "simple-rest-api-controller", myServiceNamespace, "kjt-springboot"));
 
-		// ** Create the OTLP Metrics Components
+		// ** Create the OTLP Metrics Components - implemented standalone, below
 		/*
 		OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
 				.setEndpoint("http://host.docker.internal:4317").build();
@@ -80,9 +89,10 @@ public class OtelConfig {
 		return openTelemetrySdk;
 	}
 
-	// The below implementation has been moved into the above method to handle all
-	// of the configs
+
 	/*
+	 * OpenTelemetryMetricsConfig sets up the metrics SDK to be used in the HttpServletTraceInterceptor
+	 */
 	@Bean
 	public static MeterProvider OpenTelemetryMetricsConfig() {
 		
@@ -93,26 +103,27 @@ public class OtelConfig {
 		Resource serviceNameResource = Resource.create(
 				Attributes.of(myServiceName, "simple-rest-api-controller", myServiceNamespace, "kjt-springboot"));
 		
-		// Similar to the logic above, but does not register the MeterProvider Globally
-		
-		//OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
-		//		.setEndpoint("http://host.docker.internal:4317").setTimeout(2, TimeUnit.SECONDS).build();
+		// Register both a LoggingMetricExporter and OtlpGrpcMetricExporter
+
 		OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
-				.setEndpoint("http://localhost:1234").setTimeout(2, TimeUnit.SECONDS).build();
+				.setEndpoint("http://host.docker.internal:4317").setTimeout(2, TimeUnit.SECONDS).build();
 		SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(Resource.getDefault().merge(serviceNameResource)).build();
+		IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder().setMetricExporter(metricExporter)
+				.setMetricProducers(Collections.singleton(meterProvider)).setExportIntervalMillis(10000).buildAndStart();
+		/*
 		IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder().setMetricExporter(metricExporter)
 				.setMetricExporter(new LoggingMetricExporter()).setMetricProducers(Collections.singleton(meterProvider))
 				.setExportIntervalMillis(10000).buildAndStart();
+		*/
 		
 		// Prometheus Exporter
-		PrometheusCollector.newBuilder().setMetricProducer(meterProvider).buildAndRegister();
+		//PrometheusCollector.newBuilder().setMetricProducer(meterProvider).buildAndRegister();
 		
-
 		Runtime.getRuntime().addShutdownHook(new Thread(intervalMetricReader::shutdown));
 
 		return meterProvider;
 
 	}
-	*/
+	
 
 }

@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+// Can't figure out how to get GlobalOpenTelemetry to work in this scenario, so not using
+//import io.opentelemetry.api.GlobalOpenTelemetry;
+// OpenTelemetry Traces
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -21,12 +23,27 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 
+// OpenTelemetry Metrics
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongValueRecorder;
+
 @Component
 public class HttpServletTraceInterceptor implements HandlerInterceptor {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpServletTraceInterceptor.class);
+	
+	// The really weird thing is that my LoggingMetricExporter works fine, but the OpenTelemetryMetricExporter doesn't seem to work at all
+	// Even when mis-configured, I don't see any exceptions or logging going on with it - super weird!
+	
+	// OTel Metrics Instantiation
+	private static final MeterProvider meterProvider = OtelConfig.OpenTelemetryMetricsConfig();
+	LongCounter counter = meterProvider.get("com.ktully.otel.simpleRestApiController.Controllers.BaseController").longCounterBuilder("requests_counter").build();
+	LongValueRecorder recorder = meterProvider.get("com.ktully.otel.simpleRestApiController.Controllers.BaseController").longValueRecorderBuilder("method_timer").setUnit("ms").build();
+	long startTime;
+	
 
-	// Otel Tracer instantiation
+	// OTel Tracer Instantiation
 	// TODO: get Tracer name from ENV VAR or application.properties
 	// TODO: figure out how to use GlobalOpenTelemetry in Spring Boot
 	//public static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
@@ -76,6 +93,12 @@ public class HttpServletTraceInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
+		
+		// Start the metric timer
+		startTime = System.currentTimeMillis();
+		
+		// Increment counter
+		counter.add(1);
 
 		/*
 		 * Extract Context from @HttpServletRequest
@@ -159,6 +182,9 @@ public class HttpServletTraceInterceptor implements HandlerInterceptor {
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
 			Exception exception) throws Exception {
+		
+		// Calculate the time spent, and record the metric
+		recorder.record(System.currentTimeMillis() - startTime);
 
 		if (serverSpan != null) {
 			serverSpan.end();
