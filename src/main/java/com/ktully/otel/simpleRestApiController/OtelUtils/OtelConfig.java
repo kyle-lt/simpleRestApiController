@@ -103,14 +103,18 @@ public class OtelConfig {
 		Resource serviceNameResource = Resource.create(
 				Attributes.of(myServiceName, "simple-rest-api-controller", myServiceNamespace, "kjt-springboot"));
 		
-		// Register both a LoggingMetricExporter and OtlpGrpcMetricExporter
-
 		OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
 				.setEndpoint("http://host.docker.internal:4317").setTimeout(2, TimeUnit.SECONDS).build();
 		SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(Resource.getDefault().merge(serviceNameResource)).build();
+		// NOTE: Only the "last" MetricExporter gets any metric data - so I have removed the LoggingExporter in favor of the OtlpGrpcMetricExporter
 		IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder().setMetricExporter(metricExporter)
 				.setMetricProducers(Collections.singleton(meterProvider)).setExportIntervalMillis(10000).buildAndStart();
+		// So, I guess I'll just have TWO IntervalMetricReaders
+		IntervalMetricReader intervalMetricReaderLogging = IntervalMetricReader.builder()
+				.setMetricExporter(new LoggingMetricExporter()).setMetricProducers(Collections.singleton(meterProvider))
+				.setExportIntervalMillis(10000).buildAndStart();
 		/*
+		 * Original Code that tried to use both types of MetricExporters
 		IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder().setMetricExporter(metricExporter)
 				.setMetricExporter(new LoggingMetricExporter()).setMetricProducers(Collections.singleton(meterProvider))
 				.setExportIntervalMillis(10000).buildAndStart();
@@ -120,6 +124,7 @@ public class OtelConfig {
 		//PrometheusCollector.newBuilder().setMetricProducer(meterProvider).buildAndRegister();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread(intervalMetricReader::shutdown));
+		Runtime.getRuntime().addShutdownHook(new Thread(intervalMetricReaderLogging::shutdown));
 
 		return meterProvider;
 
